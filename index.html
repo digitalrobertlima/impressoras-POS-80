@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle EPSON</title>
+    <style>
+        /* =========================================
+           ESTILOS DA TELA (Interface do Usuário)
+           ========================================= */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2b2b2b;
+            color: #fff;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+        }
+
+        .painel-controle {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 400px;
+            border: 1px solid #333;
+        }
+
+        .painel-controle h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+
+        .grupo-input {
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-add { background: #008CBA; color: white; }
+        .btn-add:hover { background: #007399; }
+        
+        .btn-imprimir { background: #4CAF50; color: white; font-size: 16px; }
+        .btn-imprimir:hover { background: #45a049; }
+        
+        .btn-limpar { background: #f44336; color: white; }
+        .btn-limpar:hover { background: #da190b; }
+
+        /* =========================================
+           ESTILOS DO CUPOM VIRTUAL NA TELA
+           ========================================= */
+        .container-cupom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #cupom {
+            background: #fff;
+            color: #000;
+            width: 80mm; /* Largura padrão da bobina EPSON */
+            min-height: 100mm;
+            padding: 5mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            font-family: 'Courier New', Courier, monospace; /* Fonte de impressora */
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .cabecalho-cupom {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .linha-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .rodape-cupom {
+            text-align: center;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        /* =========================================
+           MÁGICA DA IMPRESSÃO (@media print)
+           Tudo aqui só é lido quando aciona a impressora
+           ========================================= */
+        @media print {
+            /* 1. Oculta tudo que não for o cupom */
+            body * {
+                visibility: hidden;
+            }
+            
+            /* 2. Torna visível apenas o cupom e seus filhos */
+            #cupom, #cupom * {
+                visibility: visible;
+            }
+            
+            /* 3. Reposiciona o cupom no canto exato da página para a impressora ler corretamente */
+            #cupom {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
+                margin: 0;
+                padding: 0;
+                box-shadow: none; /* Remove sombras na impressão */
+            }
+
+            /* 4. Remove margens nativas do navegador */
+            @page {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAINEL DE CONTROLE (Não sai na impressão) -->
+    <div class="painel-controle">
+        <h2>Personalização da EPSON</h2>
+        <p>Preencha os dados para montar a nota virtual.</p>
+
+        <div class="grupo-input">
+            <input type="text" id="codigo" placeholder="Código (Ex: 1042)">
+        </div>
+        <div class="grupo-input">
+            <input type="text" id="produto" placeholder="Nome do Produto">
+        </div>
+        <div class="grupo-input">
+            <input type="text" id="extra" placeholder="Info extra ou Valor (Opcional)">
+        </div>
+
+        <button class="btn-add" onclick="adicionarItem()">+ Adicionar Linha</button>
+        <br><br><br>
+        <button class="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR NOTA</button>
+        <button class="btn-limpar" onclick="limparNota()">🗑️ Limpar Tudo</button>
+    </div>
+
+    <!-- CUPOM VIRTUAL (Isso é o que vai ser impresso) -->
+    <div class="container-cupom">
+        <h3 style="color: #aaa; margin-top: 0;">Pré-visualização (Tamanho Real)</h3>
+        <div id="cupom">
+            <div class="cabecalho-cupom">
+                <strong>IMPRESSÃO PERSONALIZADA</strong><br>
+                Registro Interno de Produtos
+            </div>
+            
+            <div id="lista-itens">
+                <!-- Os itens adicionados via JavaScript aparecerão aqui -->
+            </div>
+
+            <div class="rodape-cupom">
+                Gerado via Sistema Web Local<br>
+                --------------------------------
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para pegar os dados dos inputs e injetar na nota virtual
+        function adicionarItem() {
+            const codigo = document.getElementById('codigo').value;
+            const produto = document.getElementById('produto').value;
+            const extra = document.getElementById('extra').value;
+
+            if (produto.trim() === '') {
+                alert("O nome do produto é obrigatório.");
+                return;
+            }
+
+            const lista = document.getElementById('lista-itens');
+            const item = document.createElement('div');
+            item.className = 'linha-item';
+            
+            // Monta a linha com os dados formatados
+            let textoEsquerda = codigo ? `[${codigo}] ${produto}` : produto;
+            item.innerHTML = `<span>${textoEsquerda}</span> <span>${extra}</span>`;
+            
+            lista.appendChild(item);
+
+            // Limpa os campos após adicionar, facilitando a próxima digitação
+            document.getElementById('codigo').value = '';
+            document.getElementById('produto').value = '';
+            document.getElementById('extra').value = '';
+            document.getElementById('codigo').focus();
+        }
+
+        // Função para resetar a nota
+        function limparNota() {
+            document.getElementById('lista-itens').innerHTML = '';
+        }
+    </script>
+
+</body>
+</html>
