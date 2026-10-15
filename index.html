@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle EPSON</title>
+    <title>Editor Livre EPSON</title>
     <style>
         /* =========================================
            ESTILOS DA TELA (Interface do Usuário)
@@ -24,18 +24,20 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            width: 400px;
+            width: 350px;
             border: 1px solid #333;
+            height: fit-content;
         }
 
         .painel-controle h2 { margin-top: 0; color: #4CAF50; }
-        .grupo-input { margin-bottom: 15px; }
         
-        input {
-            width: 100%; padding: 10px; background: #333;
-            border: 1px solid #444; color: #fff;
-            border-radius: 4px; box-sizing: border-box;
-            text-transform: uppercase; /* Força maiúsculo na digitação */
+        .instrucoes {
+            background: #333;
+            padding: 15px;
+            border-left: 4px solid #008CBA;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
         }
 
         button {
@@ -45,62 +47,50 @@
             transition: 0.2s;
         }
 
-        .btn-add { background: #008CBA; color: white; }
-        .btn-add:hover { background: #007399; }
-        .btn-imprimir { background: #4CAF50; color: white; font-size: 16px; }
+        .btn-acao { background: #555; color: white; }
+        .btn-acao:hover { background: #777; }
+        
+        .btn-imprimir { background: #4CAF50; color: white; font-size: 16px; margin-top: 20px; }
         .btn-imprimir:hover { background: #45a049; }
+        
         .btn-limpar { background: #f44336; color: white; }
         .btn-limpar:hover { background: #da190b; }
 
         /* =========================================
-           ESTILOS DO CUPOM (Focado na Impressora Térmica)
+           ESTILOS DO CUPOM (O Canvas em Branco)
            ========================================= */
         .container-cupom {
             display: flex; flex-direction: column; align-items: center;
         }
 
+        /* O elemento agora age como um Bloco de Notas */
         #cupom {
             background: #fff;
-            color: #000 !important; /* Força o preto absoluto */
-            width: 78mm; /* Um pouco menor que 80mm para evitar corte nas margens */
-            min-height: 100mm;
+            color: #000 !important;
+            width: 78mm; 
+            min-height: 150mm; /* Um pouco mais longo na tela para dar espaço de edição */
             padding: 2mm;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
             
-            /* Fontes parecidas com impressora matricial/térmica */
             font-family: 'Courier New', Courier, monospace; 
-            
-            /* Ajustes para ficar igual ao PDV */
-            font-size: 13pt; /* Tamanho maior */
-            font-weight: 900 !important; /* Negrito extremo */
-            text-transform: uppercase; /* Tudo em maiúsculo */
-            line-height: 1.2; /* Espaçamento mais apertado entre linhas */
+            font-size: 13pt; 
+            font-weight: 900 !important; 
+            text-transform: uppercase; 
+            line-height: 1.2; 
             box-sizing: border-box;
             
-            /* Tira a suavização do navegador para o preto ficar "duro" */
             -webkit-font-smoothing: none;
             text-rendering: optimizeSpeed;
+            
+            /* Permite digitação livre, quebra de linha e preserva espaços */
+            white-space: pre-wrap; 
+            outline: none; /* Tira a borda azul ao clicar */
+            cursor: text;
         }
 
-        .cabecalho-cupom {
-            text-align: left; /* Alinhado à esquerda */
-            border-bottom: 2px dashed #000; /* Linha mais grossa */
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
-
-        .linha-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .rodape-cupom {
-            text-align: center;
-            border-top: 2px dashed #000;
-            padding-top: 10px;
-            margin-top: 20px;
-            font-size: 11pt;
+        /* Efeito visual para indicar que é editável ao passar o mouse */
+        #cupom:hover {
+            box-shadow: 0 0 25px rgba(76, 175, 80, 0.5);
         }
 
         /* =========================================
@@ -109,7 +99,6 @@
         @media print {
             body * { visibility: hidden; }
             
-            /* Força a impressão em preto e branco absoluto */
             #cupom, #cupom * { 
                 visibility: visible; 
                 color: #000 !important;
@@ -121,6 +110,7 @@
                 left: 0;
                 top: 0;
                 width: 78mm;
+                min-height: auto; /* Na impressão, ocupa só o tamanho do texto */
                 margin: 0;
                 padding: 0;
                 box-shadow: none;
@@ -132,96 +122,100 @@
 </head>
 <body>
 
-    <!-- PAINEL DE CONTROLE (Não sai na impressão) -->
+    <!-- PAINEL DE CONTROLE -->
     <div class="painel-controle">
-        <h2>Personalização da EPSON</h2>
-        <p>Preencha os dados para montar a nota virtual.</p>
-
-        <div class="grupo-input">
-            <input type="text" id="quantidade" placeholder="Quantidade (Ex: 1)">
-        </div>
-        <div class="grupo-input">
-            <input type="text" id="produto" placeholder="Nome do Produto (Ex: PASTEL DE CARNE)">
-        </div>
-        <div class="grupo-input">
-            <input type="text" id="extra" placeholder="Info extra ou Valor (Opcional)">
+        <h2>Editor Livre EPSON</h2>
+        
+        <div class="instrucoes">
+            <strong>Como usar:</strong><br>
+            1. Clique diretamente no papel branco ao lado.<br>
+            2. Digite como se fosse um Bloco de Notas.<br>
+            3. Use o "Espaço" para alinhar preços à direita.<br>
+            4. Apague ou modifique qualquer linha livremente.
         </div>
 
-        <button class="btn-add" onclick="adicionarItem()">+ Adicionar Linha</button>
-        <br><br><br>
+        <p><strong>Atalhos Rápidos:</strong></p>
+        <button class="btn-acao" onclick="inserirLinha()">Inserir Linha Tracejada (---)</button>
+        <button class="btn-acao" onclick="inserirDataHora()">Inserir Data e Hora Atual</button>
+        
         <button class="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR NOTA</button>
-        <button class="btn-limpar" onclick="limparNota()">🗑️ Limpar Tudo</button>
+        <button class="btn-limpar" onclick="limparTudo()">🗑️ Tela em Branco</button>
     </div>
 
-    <!-- CUPOM VIRTUAL (Isso é o que vai ser impresso) -->
+    <!-- CUPOM VIRTUAL (Editável) -->
     <div class="container-cupom">
-        <h3 style="color: #aaa; margin-top: 0;">Pré-visualização (Tamanho Real)</h3>
-        <div id="cupom">
-            <div class="cabecalho-cupom">
-                <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">PRODUÇÃO</div>
-                BALCÃO: 104<br>
-                PDV.: 01<br>
-                DATA/HORA: <span id="data-hora"></span><br>
-                <br>
-                QT PRODUTO
-            </div>
-            
-            <div id="lista-itens">
-                <!-- Os itens adicionados via JavaScript aparecerão aqui -->
-            </div>
+        <h3 style="color: #aaa; margin-top: 0;">Clique no papel para editar</h3>
+        
+        <!-- contenteditable="true" é o que permite clicar e digitar dentro da div -->
+        <div id="cupom" contenteditable="true" spellcheck="false">
+             PRODUCAO
 
-            <div class="rodape-cupom">
-                SEM VALOR FISCAL<br>
-                Gerado via Sistema Web Local
-            </div>
-        </div>
+BALCAO: 104
+PDV.: 01
+DATA/HORA: <span id="data-hora-placeholder"></span>
+
+--------------------------------
+QT PRODUTO                 VALOR
+--------------------------------
+ 1 PASTEL DE CARNE          3,00
+ 1 PASTEL DE QUEIJO         3,00
+
+
+
+--------------------------------
+        SEM VALOR FISCAL
+  GERADO VIA SISTEMA WEB LOCAL
+</div>
     </div>
 
     <script>
-        // Função para atualizar a data e hora no cabeçalho
-        function atualizarDataHora() {
+        const cupom = document.getElementById('cupom');
+
+        // Substitui o placeholder pela data atual ao carregar
+        function inicializarData() {
+            const placeholder = document.getElementById('data-hora-placeholder');
+            if (placeholder) {
+                const agora = new Date();
+                const data = agora.toLocaleDateString('pt-BR');
+                const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                placeholder.innerText = `${data} ${hora}`;
+            }
+        }
+
+        // Função para os botões de atalho inserirem texto na posição do cursor
+        function inserirTextoNoCursor(texto) {
+            cupom.focus();
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const textNode = document.createTextNode(texto);
+            range.insertNode(textNode);
+            
+            // Move o cursor para depois do texto inserido
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function inserirLinha() {
+            inserirTextoNoCursor("\n--------------------------------\n");
+        }
+
+        function inserirDataHora() {
             const agora = new Date();
             const data = agora.toLocaleDateString('pt-BR');
             const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('data-hora').innerText = `${data} ${hora}`;
+            inserirTextoNoCursor(`${data} ${hora}`);
         }
-        
-        // Chama a função ao carregar a página
-        atualizarDataHora();
 
-        // Função para pegar os dados dos inputs e injetar na nota virtual
-        function adicionarItem() {
-            const quantidade = document.getElementById('quantidade').value;
-            const produto = document.getElementById('produto').value;
-            const extra = document.getElementById('extra').value;
-
-            if (produto.trim() === '') {
-                alert("O nome do produto é obrigatório.");
-                return;
+        function limparTudo() {
+            if(confirm("Tem certeza que deseja apagar tudo e começar do zero?")) {
+                cupom.innerHTML = "";
+                cupom.focus();
             }
-
-            const lista = document.getElementById('lista-itens');
-            const item = document.createElement('div');
-            item.className = 'linha-item';
-            
-            // Monta a linha com os dados formatados
-            let textoEsquerda = quantidade ? `${quantidade} ${produto}` : produto;
-            item.innerHTML = `<span>${textoEsquerda}</span> <span>${extra}</span>`;
-            
-            lista.appendChild(item);
-
-            // Limpa os campos após adicionar, facilitando a próxima digitação
-            document.getElementById('quantidade').value = '';
-            document.getElementById('produto').value = '';
-            document.getElementById('extra').value = '';
-            document.getElementById('quantidade').focus();
         }
 
-        // Função para resetar a nota
-        function limparNota() {
-            document.getElementById('lista-itens').innerHTML = '';
-            atualizarDataHora(); // Atualiza a hora ao limpar a nota
-        }
+        window.onload = inicializarData;
     </script>
 
 </body>
