@@ -28,69 +28,63 @@
             border: 1px solid #333;
         }
 
-        .painel-controle h2 {
-            margin-top: 0;
-            color: #4CAF50;
-        }
-
-        .grupo-input {
-            margin-bottom: 15px;
-        }
-
+        .painel-controle h2 { margin-top: 0; color: #4CAF50; }
+        .grupo-input { margin-bottom: 15px; }
+        
         input {
-            width: 100%;
-            padding: 10px;
-            background: #333;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 4px;
-            box-sizing: border-box;
+            width: 100%; padding: 10px; background: #333;
+            border: 1px solid #444; color: #fff;
+            border-radius: 4px; box-sizing: border-box;
+            text-transform: uppercase; /* Força maiúsculo na digitação */
         }
 
         button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 10px;
+            width: 100%; padding: 12px; border: none;
+            border-radius: 4px; cursor: pointer;
+            font-weight: bold; margin-bottom: 10px;
             transition: 0.2s;
         }
 
         .btn-add { background: #008CBA; color: white; }
         .btn-add:hover { background: #007399; }
-        
         .btn-imprimir { background: #4CAF50; color: white; font-size: 16px; }
         .btn-imprimir:hover { background: #45a049; }
-        
         .btn-limpar { background: #f44336; color: white; }
         .btn-limpar:hover { background: #da190b; }
 
         /* =========================================
-           ESTILOS DO CUPOM VIRTUAL NA TELA
+           ESTILOS DO CUPOM (Focado na Impressora Térmica)
            ========================================= */
         .container-cupom {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: flex; flex-direction: column; align-items: center;
         }
 
         #cupom {
             background: #fff;
-            color: #000;
-            width: 80mm; /* Largura padrão da bobina EPSON */
+            color: #000 !important; /* Força o preto absoluto */
+            width: 78mm; /* Um pouco menor que 80mm para evitar corte nas margens */
             min-height: 100mm;
-            padding: 5mm;
+            padding: 2mm;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            font-family: 'Courier New', Courier, monospace; /* Fonte de impressora */
-            font-size: 14px;
+            
+            /* Fontes parecidas com impressora matricial/térmica */
+            font-family: 'Courier New', Courier, monospace; 
+            
+            /* Ajustes para ficar igual ao PDV */
+            font-size: 13pt; /* Tamanho maior */
+            font-weight: 900 !important; /* Negrito extremo */
+            text-transform: uppercase; /* Tudo em maiúsculo */
+            line-height: 1.2; /* Espaçamento mais apertado entre linhas */
             box-sizing: border-box;
+            
+            /* Tira a suavização do navegador para o preto ficar "duro" */
+            -webkit-font-smoothing: none;
+            text-rendering: optimizeSpeed;
         }
 
         .cabecalho-cupom {
-            text-align: center;
-            border-bottom: 1px dashed #000;
+            text-align: left; /* Alinhado à esquerda */
+            border-bottom: 2px dashed #000; /* Linha mais grossa */
             padding-bottom: 10px;
             margin-bottom: 10px;
         }
@@ -98,47 +92,41 @@
         .linha-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .rodape-cupom {
             text-align: center;
-            border-top: 1px dashed #000;
+            border-top: 2px dashed #000;
             padding-top: 10px;
             margin-top: 20px;
-            font-size: 12px;
+            font-size: 11pt;
         }
 
         /* =========================================
            MÁGICA DA IMPRESSÃO (@media print)
-           Tudo aqui só é lido quando aciona a impressora
            ========================================= */
         @media print {
-            /* 1. Oculta tudo que não for o cupom */
-            body * {
-                visibility: hidden;
+            body * { visibility: hidden; }
+            
+            /* Força a impressão em preto e branco absoluto */
+            #cupom, #cupom * { 
+                visibility: visible; 
+                color: #000 !important;
+                font-weight: 900 !important;
             }
             
-            /* 2. Torna visível apenas o cupom e seus filhos */
-            #cupom, #cupom * {
-                visibility: visible;
-            }
-            
-            /* 3. Reposiciona o cupom no canto exato da página para a impressora ler corretamente */
             #cupom {
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 80mm;
+                width: 78mm;
                 margin: 0;
                 padding: 0;
-                box-shadow: none; /* Remove sombras na impressão */
+                box-shadow: none;
             }
 
-            /* 4. Remove margens nativas do navegador */
-            @page {
-                margin: 0;
-            }
+            @page { margin: 0; }
         }
     </style>
 </head>
@@ -150,10 +138,10 @@
         <p>Preencha os dados para montar a nota virtual.</p>
 
         <div class="grupo-input">
-            <input type="text" id="codigo" placeholder="Código (Ex: 1042)">
+            <input type="text" id="quantidade" placeholder="Quantidade (Ex: 1)">
         </div>
         <div class="grupo-input">
-            <input type="text" id="produto" placeholder="Nome do Produto">
+            <input type="text" id="produto" placeholder="Nome do Produto (Ex: PASTEL DE CARNE)">
         </div>
         <div class="grupo-input">
             <input type="text" id="extra" placeholder="Info extra ou Valor (Opcional)">
@@ -170,8 +158,12 @@
         <h3 style="color: #aaa; margin-top: 0;">Pré-visualização (Tamanho Real)</h3>
         <div id="cupom">
             <div class="cabecalho-cupom">
-                <strong>IMPRESSÃO PERSONALIZADA</strong><br>
-                Registro Interno de Produtos
+                <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">PRODUÇÃO</div>
+                BALCÃO: 104<br>
+                PDV.: 01<br>
+                DATA/HORA: <span id="data-hora"></span><br>
+                <br>
+                QT PRODUTO
             </div>
             
             <div id="lista-itens">
@@ -179,16 +171,27 @@
             </div>
 
             <div class="rodape-cupom">
-                Gerado via Sistema Web Local<br>
-                --------------------------------
+                SEM VALOR FISCAL<br>
+                Gerado via Sistema Web Local
             </div>
         </div>
     </div>
 
     <script>
+        // Função para atualizar a data e hora no cabeçalho
+        function atualizarDataHora() {
+            const agora = new Date();
+            const data = agora.toLocaleDateString('pt-BR');
+            const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('data-hora').innerText = `${data} ${hora}`;
+        }
+        
+        // Chama a função ao carregar a página
+        atualizarDataHora();
+
         // Função para pegar os dados dos inputs e injetar na nota virtual
         function adicionarItem() {
-            const codigo = document.getElementById('codigo').value;
+            const quantidade = document.getElementById('quantidade').value;
             const produto = document.getElementById('produto').value;
             const extra = document.getElementById('extra').value;
 
@@ -202,21 +205,22 @@
             item.className = 'linha-item';
             
             // Monta a linha com os dados formatados
-            let textoEsquerda = codigo ? `[${codigo}] ${produto}` : produto;
+            let textoEsquerda = quantidade ? `${quantidade} ${produto}` : produto;
             item.innerHTML = `<span>${textoEsquerda}</span> <span>${extra}</span>`;
             
             lista.appendChild(item);
 
             // Limpa os campos após adicionar, facilitando a próxima digitação
-            document.getElementById('codigo').value = '';
+            document.getElementById('quantidade').value = '';
             document.getElementById('produto').value = '';
             document.getElementById('extra').value = '';
-            document.getElementById('codigo').focus();
+            document.getElementById('quantidade').focus();
         }
 
         // Função para resetar a nota
         function limparNota() {
             document.getElementById('lista-itens').innerHTML = '';
+            atualizarDataHora(); // Atualiza a hora ao limpar a nota
         }
     </script>
 
